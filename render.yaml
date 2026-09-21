@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: alugae-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm run server
+    healthCheckPath: /api/health
+    envVars:
+      - key: AZURE_STORAGE_CONNECTION_STRING
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
