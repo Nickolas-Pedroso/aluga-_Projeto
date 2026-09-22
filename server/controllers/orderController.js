@@ -6,5 +6,10 @@ export async function createOrder(req, res) {
 	if (!client || !email || !Array.isArray(items) || !Number.isFinite(Number(total)) || !payment || !delivery) {
 		return res.status(400).json({ error: 'Pedido incompleto: cliente, e-mail, itens, total, pagamento e entrega são obrigatórios.' })
 	}
-	res.status(201).json(await OrderModel.create(req.body))
+	try {
+		res.status(201).json(await OrderModel.create(req.body))
+	} catch (error) {
+		console.error('Order storage error:', { message: error?.message, code: error?.code, statusCode: error?.statusCode, details: error?.details })
+		res.status(500).json({ error: 'Falha ao salvar pedido no Azure Table Storage.', code: error?.code || 'ORDER_STORAGE_ERROR' })
+	}
 }
