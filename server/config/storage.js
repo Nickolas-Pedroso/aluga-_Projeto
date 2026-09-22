@@ -65,8 +65,9 @@ export async function saveRecord(tableName, fallbackKey, record) {
   }
   const { partitionKey: _partitionKey, rowKey: _rowKey, ...safeRecord } = azureSafeRecord(withId)
   const entity = { partitionKey: 'default', rowKey: String(withId.id), ...safeRecord }
-  await tableClient(tableName).upsertEntity(entity, 'Replace')
-  return entity
+  const client = tableClient(tableName)
+  await client.upsertEntity(entity, 'Replace')
+  return client.getEntity('default', String(withId.id))
 }
 
 export async function updateRecord(tableName, fallbackKey, id, record) {

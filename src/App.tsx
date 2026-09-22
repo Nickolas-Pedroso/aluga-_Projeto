@@ -153,7 +153,10 @@ function App() {
   async function saveClient(draft: ClientDraft, existing?: Client) {
     const saved = existing ? await api.clients.update(existing.id, draft) : await api.clients.create(draft)
     const nextClient = { ...draft, id: existing?.id || (saved as Client).id || Date.now(), rentals: existing?.rentals || 0, role: existing?.role || 'customer' as const }
-    setClients((current) => existing ? current.map((item) => item.id === existing.id ? nextClient : item) : [...current, nextClient])
+    const persistedClients = await api.clients.list()
+    const persistedClient = (persistedClients as Client[]).find((client) => client.id === nextClient.id || client.email === nextClient.email)
+    if (!persistedClient) throw new Error('A API não retornou o cliente salvo em NickolasClientes.')
+    setClients(persistedClients as Client[])
     setShowClientForm(false)
     setNotice(existing ? 'Cliente atualizado no Azure' : 'Cliente cadastrado no Azure')
     return nextClient
