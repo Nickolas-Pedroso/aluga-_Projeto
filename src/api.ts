@@ -5,7 +5,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
     ...options,
   })
-  if (!response.ok) throw new Error(`API ${response.status}`)
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(body || `API ${response.status}`)
+  }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }

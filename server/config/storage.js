@@ -27,6 +27,13 @@ export function blobCredential() {
   return new StorageSharedKeyCredential(storageAccountName, storageAccountKey)
 }
 
+function azureSafeRecord(record) {
+  return Object.fromEntries(Object.entries(record).map(([key, value]) => [
+    key,
+    value !== null && typeof value === 'object' ? JSON.stringify(value) : value,
+  ]))
+}
+
 export async function initializeTables() {
   if (!useAzure) return
   await Promise.all(Object.values(tableNames).map(async (name) => {
@@ -52,7 +59,7 @@ export async function saveRecord(tableName, fallbackKey, record) {
     localData[fallbackKey].push(withId)
     return withId
   }
-  const entity = { partitionKey: 'default', rowKey: String(withId.id), ...withId }
+  const entity = { partitionKey: 'default', rowKey: String(withId.id), ...azureSafeRecord(withId) }
   await tableClient(tableName).upsertEntity(entity, 'Replace')
   return entity
 }
@@ -62,7 +69,7 @@ export async function updateRecord(tableName, fallbackKey, id, record) {
     localData[fallbackKey] = localData[fallbackKey].map((item) => item.id === id ? { ...item, ...record, id } : item)
     return localData[fallbackKey].find((item) => item.id === id)
   }
-  const entity = { partitionKey: 'default', rowKey: String(id), ...record, id }
+  const entity = { partitionKey: 'default', rowKey: String(id), ...azureSafeRecord({ ...record, id }) }
   await tableClient(tableName).upsertEntity(entity, 'Merge')
   return entity
 }
