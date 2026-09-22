@@ -435,20 +435,26 @@ function App() {
   }
 
   async function removeProduct(id: number) {
-    setProducts((current) => current.filter((product) => product.id !== id));
     try {
       await api.products.remove(id);
+
+      setProducts((current) => current.filter((product) => product.id !== id));
+
+      setNotice("Produto excluído com sucesso");
     } catch {
-      setNotice("Produto removido apenas nesta sessão");
+      setNotice("Não foi possível excluir o produto");
     }
   }
 
   async function removeClient(id: number) {
-    setClients((current) => current.filter((client) => client.id !== id));
     try {
       await api.clients.remove(id);
+
+      setClients((current) => current.filter((client) => client.id !== id));
+
+      setNotice("Cliente excluído com sucesso");
     } catch {
-      setNotice("Cliente removido apenas nesta sessão");
+      setNotice("Não foi possível excluir o cliente");
     }
   }
 
