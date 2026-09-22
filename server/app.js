@@ -17,5 +17,5 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/uploads', uploadRoutes)
 app.use((error, _req, res, _next) => {
   console.error(error)
-  res.status(500).json({ error: 'Não foi possível concluir a operação.' })
+  res.status(500).json({ error: error instanceof Error ? error.message : 'Não foi possível concluir a operação.' })
 })

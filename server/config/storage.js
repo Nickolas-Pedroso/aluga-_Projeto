@@ -28,10 +28,9 @@ export function blobCredential() {
 }
 
 function azureSafeRecord(record) {
-  return Object.fromEntries(Object.entries(record).map(([key, value]) => [
-    key,
-    value !== null && typeof value === 'object' ? JSON.stringify(value) : value,
-  ]))
+  return Object.fromEntries(Object.entries(record)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => [key, value !== null && typeof value === 'object' ? JSON.stringify(value) : value]))
 }
 
 export async function initializeTables() {
