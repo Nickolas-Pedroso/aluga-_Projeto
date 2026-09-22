@@ -30,7 +30,12 @@ export function blobCredential() {
 function azureSafeRecord(record) {
   return Object.fromEntries(Object.entries(record)
     .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => [key, value !== null && typeof value === 'object' ? JSON.stringify(value) : value]))
+    .map(([key, value]) => {
+      if (value === null) return [key, '']
+      if (typeof value === 'string' || typeof value === 'boolean') return [key, value]
+      if (typeof value === 'number') return [key, Number.isFinite(value) ? value : 0]
+      return [key, JSON.stringify(value)]
+    }))
 }
 
 export async function initializeTables() {
@@ -58,7 +63,8 @@ export async function saveRecord(tableName, fallbackKey, record) {
     localData[fallbackKey].push(withId)
     return withId
   }
-  const entity = { partitionKey: 'default', rowKey: String(withId.id), ...azureSafeRecord(withId) }
+  const { partitionKey: _partitionKey, rowKey: _rowKey, ...safeRecord } = azureSafeRecord(withId)
+  const entity = { partitionKey: 'default', rowKey: String(withId.id), ...safeRecord }
   await tableClient(tableName).upsertEntity(entity, 'Replace')
   return entity
 }
